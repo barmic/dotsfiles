@@ -1,0 +1,48 @@
+###################
+# ~/.bash_aliases #
+#    27/06/2009   #
+###################
+
+# Raccourcis
+alias l1='ls -1'
+alias la='ls -a'
+alias ll='ls -lh'
+alias l.='ls -d .* --color=always'
+
+# Alias transparents
+alias bc='bc -q'
+alias df='df -h -x supermount'
+alias du='du -h'
+alias ls='ls -F --color=always'
+alias rm='rm --force --preserve-root'
+alias mv='mv -i'
+alias make='make --jobs'
+alias find="noglob find"
+
+# Alias utilitaires
+alias dos2unix="perl -pi -e 's/\r\n/\n/g'"
+alias reset="tput reset && printf %b '\033[3J'"
+alias mmv='noglob zmv -W'
+alias ccp='noglob zmv -CW'
+alias repeate='watch -n3'
+alias which='alias | /usr/bin/which --tty-only --read-alias --show-dot --show-tilde'
+
+# Alias sur suffixes
+alias -s zip='unzip'
+alias -s tar='tar xvf'
+alias -s 'tar.gz'='tar xvf'
+alias -s 'tz'='tar xvf'
+alias -s 'bz2'='bzip2 -d'
+alias -s jpg='mirage'
+alias -s png='mirage'
+alias -s cpp='sensible-editor'
+alias -s c='sensible-editor'
+alias -s h='sensible-editor'
+alias -s txt='sensible-pager'
+
+whence xpdf    &> /dev/null && alias -s pdf='start xpdf'
+#whence emacs   &> /dev/null && alias emacs='emacs -nw'
+whence xdvi    &> /dev/null && alias -s dvi='start xdvi'
+whence latex   &> /dev/null && alias -s tex='latex'
+#whence urxvtcd &> /dev/null && alias urxvt='urxvtcd -vb -tr -sr -sk -fn "xft:Bitstream Vera Sans Mono:pixelsize=15"'
+alias gotmp="$(mktemp -d "/tmp/${USER}_XXXX")"

@@ -1,0 +1,91 @@
+function apt-search (){
+  # Initialisation
+  pid=$$
+  tmp_file="/tmp/apt-search.$$"
+
+  # We parse the list of packages find
+  readonly old_IFS=$IFS
+IFS='
+'
+  count=0 # number of packahe not installed
+  match=0 # 1 if a package not installed
+  #TODO : remplace this loop by "aptitude search"
+  for line in $(apt-cache search "$@" | grep -v '^lib' | sort) ; do
+    pkg=$(echo $line | awk '{ print $1 }')
+    if $(dpkg -s "$pkg" 2> /dev/null | grep '^Status: .* installed' &> /dev/null) ; then
+      # The package is installed
+      echo "i $line" >> $tmp_file
+      echo $line | sed -e "s/^\([^ ]*\) - \(.*\)$/$fg[red]\1$reset_color $fg[blue]\2$reset_color/"
+    else
+      # The package is not installed
+      echo "u $line" >> $tmp_file
+      if echo $pkg | grep "^$@$" &> /dev/null ; then
+        match=1
+      fi
+      echo $line | sed -e "s/^\([^ ]*\) - \(.*\)$/$fg[green]\1$reset_color $fg[blue]\2$reset_color/"
+      ((count++))
+    fi
+  done
+  IFS=$old_IFS
+
+  # Display
+  #sed -ne "s/^u \([^ ]*\) - \(.*\)$/$fg[green]\1$reset_color $fg[blue]\2$reset_color/p;s/^i \([^ ]*\) - \(.*\)$/$fg[red]\1$reset_color $fg[blue]\2$reset_color/p" $tmp_file
+
+  # Propositions
+  if [ "$count" -eq 1 ]; then
+    sed -ne 's/^u \(.*\) - .*$/\1/p' $tmp_file | read pkg
+    echo "Voulez vous installer ${pkg} ? (y/n)"
+    read rep
+    if [ "$rep" = 'y' ]; then
+      sudo aptitude install $pkg
+    fi
+  elif [ $match -eq 1 ]; then
+    echo "Voulez vous installer $@ ? (y/n)"
+    read rep
+    if [ "$rep" = "y" ]; then
+      sudo aptitude install "$@"
+    fi
+  fi
+
+  # Clean
+  rm $tmp_file
+  unset $tmp_file
+}
+
+function errno (){
+  grep "$@" '/usr/include/asm-generic/errno-base.h'
+}
+
+function prs (){
+  ps faux | grep -v 'grep' | grep "$@" | sed -e 's/^\([^ ]*\) *\([0-9]*\) .*:[0-9][0-9] \(.*\)$/\1 \2 \3/g'
+#  ps faux | grep -v 'grep' | grep "$@" | sed -e 's/^\([ ^]*\) \([0-9]*\)/\1 \2/g'
+}
+
+function start (){
+    "$@" &> /dev/null &
+}
+
+#function pectest () {
+#    pushd '/pec/svn/trunk/commun/tubb_pec/'
+#    mkdir -p '/tmp/pec_test'
+#    mvn -Dtest="$1" -Dtubb.properties=src/test/resources/devtu.properties test | tee "/tmp/pec_test/$1.screen"
+#    popd
+#}
+
+function svnlastlog () {
+        svn log | awk -v nb=${1:-5} 'BEGIN{v=0}/^-+$/{++v; if(v>nb)exit}1'
+}
+
+# Encodage de n'importe quel fichier en ogg/vorbis
+function oggenc () {
+   for I in $@ ; do
+      ffmpeg -i "$I" -f ogg -acodec libvorbis -vn "${I%.*}.ogg" ;
+   done
+}
+
+function precmd() {
+   if [[ "$TERM" == 'rxvt-unicode' ]]; then
+      local short_pwd=$(print -D "${PWD}")
+      echo -ne "\033]0;${USER}@${HOST}:${short_pwd}\007"
+   fi
+}
