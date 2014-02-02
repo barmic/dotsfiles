@@ -1,0 +1,153 @@
+"""""""""""""""""""""
+" ~/.vimrc          "
+" Créé le 05/01/08  "
+"""""""""""""""""""""
+
+""""""""""""""""""""""
+" Options classiques "
+""""""""""""""""""""""
+set ft=man
+set nomod
+set nolist
+syntax on                             " active la coloration syntaxique
+filetype on                           " détecte automatiquement le type de fichier
+
+set nocompatible                      " désactive la compatibilité vi (vi lance vim)
+set encoding=utf-8                    " encode par défaut les fichier en utf-8
+set fileencoding=utf8                 " encode par défaut les fichier en utf-8
+set tabstop=2                         " taille de la tabulation en espace
+set expandtab                         " remplace les tabulations par des espaces
+set nohls                             " désactive le surlignement
+set ruler
+set cindent                           " active l'indentation des sources C
+set shiftwidth=2                      " nombre d'espaces pour une tabulation
+set wrapscan                          " recherche en rond
+set backspace=2                       " autorise le backspace
+set hlsearch                          " pour activer la surbrillance
+set mouse=a                           " active l'utilisation de la sourie
+set incsearch                         " exécute la recherche en même temps que l'on la tape
+set showmatch                         " affichage des parenthèses
+set dir=~/.tmp                        " répertoire des fichiers temporaires
+set suffixes=.bak,.~,.swp             " priorité faibles sur ces fichiers
+set nobackup                          " ne pas conserver de backup
+set title                             " modifier le titre du terminal
+set ff=unix                           " suppression des ^M
+set autoindent                        " indentation automatique avancée
+set smartindent                       " indentation plus intelligente
+set backspace=indent,eol,start        " autorisation du retour arrière
+set path=.,/usr/include,../include,../src,include,src,,
+    " répertoire où l'autocomplétement va chercher les fonction et les noms de variables
+set wildignore=*.o,*.tbz,*.run,*.tar,*.exe,*.png,*.jpg,*.tbz,*.tgz,*.bzip,*.gzip " fichiers ignorés
+
+set number
+highlight LineNr ctermbg=black ctermfg=gray
+
+highlight TabLine term=none cterm=none
+highlight TabLineSel ctermbg=darkblue
+
+"set cursorline
+"highlight CursorLine term=reverse cterm=reverse
+"set fdm=indent
+
+"""""""""""""
+" Fonctions "
+"""""""""""""
+
+function! s:DisplayStatus(msg)
+  echohl Todo
+  echo a:msg
+  echohl None
+endfunction
+
+"" Curseur à l'ancienne position
+function! s:CursorOldPosition()
+  if line("'\"") > 0 && line("'\"") <= line("$")
+    exec "normal g`\""
+  endif
+endfunction
+autocmd BufReadPost * silent! call s:CursorOldPosition()
+
+"" Netoyage de code
+function! CleanCode()
+  %retab
+  :%s///ge
+  :%s/[ \t]*$//ge
+endfunction
+
+function! LoadTemplate(name, extension)
+  echohl Todo
+  echo a:name
+  echohl None
+  let bou = expand('%:e')
+  silent! execute '0r ' . $HOME . '/.vim/template/' . bou . '.tpl'
+  silent! execute 'source ' . $HOME . '/.vim/template/autocompletion.vim'
+endfunction
+
+function! Make()
+  if()
+    execute 'make'
+  else
+    execute 'make %:r'
+  endif
+endfunction
+
+augroup filetypedetect
+au BufNewFile,BufRead *.tex setlocal spell spelllang=fr
+au BufNewFile,BufRead *.txt setlocal spell spelllang=fr
+augroup END
+
+""""""""""""""""""""""
+" Raccourcis clavier "
+""""""""""""""""""""""
+map C Da
+noremap <F2> :set paste!<cr>:set paste?<cr>
+noremap <F3> :set nu!<cr>:set nu?<cr>
+noremap <F4> :set expandtab!<cr>:set expandtab?<cr>
+noremap <F5> :set expandtab!<cr>:set expandtab?<cr>
+noremap <F6> :set spell!<cr>:set spell?<cr>
+noremap <F7> :set hlsearch!<cr>:set hlsearch?<cr>
+noremap <F9> <Esc>:NERDTreeToggle<cr>
+
+"" Racourcis à la firefox
+map <C-t>     :tabnew<cr>
+map <C-left>  :tabnext<cr>
+map <C-right> :tabprevious<cr>
+map <C-o> :e
+
+map <S-up>    :cprevious<cr>
+map <S-down>  :cnext<cr>
+
+" plis/dépli du code
+nnoremap <space> za
+" déplis tout
+nnoremap <C-c> zm
+" plis tout
+nnoremap <S-c> zr
+
+""""""""""""""""""""""""
+" Gestion des langages "
+""""""""""""""""""""""""
+au BufNewFile [Mm]akefile set noexpandtab
+au BufNewFile [Mm]akefile silent! execute '0r ' . $HOME . '/.vim/template/makefile.tpl'
+
+au BufNewFile * silent! call LoadTemplate('%:t', '%:e')
+
+"au BufEnter *.py  silent! call CleanCode()
+"au BufEnter *.c   silent! call CleanCode()
+"au BufEnter *.h   silent! call CleanCode()
+"au BufEnter *.cpp silent! call CleanCode()
+"au BufEnter *.h   set syntax=cpp.doxygen
+"au BufEnter *.sh  silent! call CleanCode()
+
+" pour perl
+au FileType perl set commentstring="%s"
+au FileType perl set foldmarker=#\ {{{,#\ }}}
+
+execute pathogen#infect()
+
+if has('gui_running')
+  colorscheme solarized
+  set background=dark
+  set guioptions-=m  "remove menu bar
+  set guioptions-=T  "remove toolbar
+endif
